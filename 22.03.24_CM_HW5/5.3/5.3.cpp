@@ -35,7 +35,7 @@ vector<double> gauss(vector<vector<double>> a, vector<double> y, int n)
     vector<double> x;
     double max;
     int k, index;
-    const double eps = 0.00001;  // точность
+    const double eps = 1e-12;  // точность
     for (int i = 0; i < n; ++i) x.push_back(0);
     k = 0;
     while (k < n)
@@ -292,12 +292,25 @@ double KF_Gauss_Type(double a, double b, double N, double m)
         }
         ans += sum;
         sum = 0;
+        y.clear();
+        sys.clear();
     }
     return ans;
 }
 
 int main()
 {
-    cout << KF_Gauss_Type(0, 1, 7, 1);
+    setlocale(LC_ALL, "Russian");
+    cout << "Приближённое вычисление интеграла при помощи составной КФ Гаусса." << endl;
+    cout << "Введите промежуток интегрирования: ";
+    double a, b;
+    cin >> a >> b;
+    cout << endl << "Введите количество узлов: ";
+    int N;
+    cin >> N;
+    cout << endl << "Введите количество разбиений: ";
+    int m;
+    cin >> m;
+    cout << KF_Gauss_Type(a, b, N, m);
     return 0;
 }
