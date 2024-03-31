@@ -10,7 +10,7 @@ vector<double> Mom(double n, double c, double d)
     vector<double> ans;
     for (int i = 0; i < 2 * n; ++i)
     {
-        ans.push_back(((double)2 / (3+2*i)) * (pow(d, 1.5+i) - pow(c, 1.5+i)));
+        ans.push_back(((double)2 / (3 + 2 * i)) * (pow(d, 1.5 + i) - pow(c, 1.5 + i)));
     }
     return ans;
 }
@@ -35,7 +35,7 @@ vector<double> gauss(vector<vector<double>> a, vector<double> y, int n)
     vector<double> x;
     double max;
     int k, index;
-    const double eps = 1e-12;  // точность
+    const double eps = 1e-18;  // точность
     for (int i = 0; i < n; ++i) x.push_back(0);
     k = 0;
     while (k < n)
@@ -95,7 +95,7 @@ vector<double> gauss(vector<vector<double>> a, vector<double> y, int n)
 
 double poly(double x, vector<double> a)
 {
-    double sum = pow(x,a.size());
+    double sum = pow(x, a.size());
     for (int i = 0; i < a.size(); ++i)
     {
         sum += a[i] * pow(x, a.size() - i - 1);
@@ -103,11 +103,11 @@ double poly(double x, vector<double> a)
     return sum;
 }
 
-double secantPoly (double a, double b, double eps, vector<double> arr_ai)
+double secantPoly(double a, double b, double eps, vector<double> arr_ai)
 {
     double x0 = a;
     double x1 = b;
-    double xk = x1 - (poly(x1,arr_ai) / (poly(x1,arr_ai) - poly(x0,arr_ai))) * (x1 - x0);
+    double xk = x1 - (poly(x1, arr_ai) / (poly(x1, arr_ai) - poly(x0, arr_ai))) * (x1 - x0);
     while (abs(xk - x1) > eps)
     {
         x0 = x1;
@@ -117,9 +117,27 @@ double secantPoly (double a, double b, double eps, vector<double> arr_ai)
     return xk;
 }
 
+double bisectionPoly(double A, double B, double eps, vector<double> arr_ai)
+{
+    double a = A;
+    double b = B;
+    while (b - a > 2 * eps)
+    {
+        double c = (a + b) / 2;
+        if (poly(a, arr_ai) * poly(c, arr_ai) <= 0)
+        {
+            b = c;
+        }
+        else
+        {
+            a = c;
+        }
+    }
+    return (b + a) / 2;
+}
 vector<double> separate_roots(int N, double a, double b, vector<double> arr_ai)
 {
-    double H = (b-a) / N;
+    double H = (b - a) / N;
     double x1 = a;
     double x2 = x1 + H;
     double y1 = poly(x1, arr_ai);
@@ -143,10 +161,10 @@ vector<double> node_roots(double a, double b, vector<double> arr_ai)
 {
     vector<double> segments;
     vector<double> node_r;
-    segments = separate_roots(1000, a, b, arr_ai);
+    segments = separate_roots(100000, a, b, arr_ai);
     for (int i = 0; i < segments.size(); i = i + 2)
     {
-        node_r.push_back(secantPoly(segments[i], segments[i + 1], 1e-12, arr_ai));
+        node_r.push_back(bisectionPoly(segments[i], segments[i + 1], 1e-12, arr_ai));
     }
     return node_r;
 }
@@ -176,7 +194,7 @@ vector<double> coef(vector<double> roots, double a, double b)
     vector<double> ans;
     for (double i = 0; i < roots.size(); ++i)
     {
-        ans.push_back(KF_Gauss(func_coef,a,b,roots.size(),i,roots));
+        ans.push_back(KF_Gauss(func_coef, a, b, roots.size(), i, roots));
     }
 
     return ans;
@@ -274,9 +292,9 @@ double KF_Gauss_Type(double a, double b, double N, double m)
         {
             y.push_back(-mom[j]);
         }
-        for (int j = N-1; j < (2 * N) - 1; ++j)
+        for (int j = N - 1; j < (2 * N) - 1; ++j)
         {
-            for (int k = j; k > j-N; --k)
+            for (int k = j; k > j - N; --k)
             {
                 string.push_back(mom[k]);
             }
@@ -286,11 +304,12 @@ double KF_Gauss_Type(double a, double b, double N, double m)
         vector<double> ai = gauss(sys, y, N);
         vector<double> node = node_roots(a + (i - 1) * h, a + i * h, ai);
         vector<double> coeff = coef(node, a + (i - 1) * h, a + i * h);
-        for (int k = 0; k < N; ++k)
+        for (int k = 0; k < coeff.size(); ++k)
         {
             sum += coeff[k] * sin(node[k]);
         }
         ans += sum;
+        //cout << sum << endl;
         sum = 0;
         y.clear();
         sys.clear();
